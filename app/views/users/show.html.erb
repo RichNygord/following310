@@ -1,0 +1,85 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @user.name %>
+  
+<h2>Follows</h2>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+  <% Follow.where(:follower_id => @user.id).each do |follow| %>
+    <tr>
+      <% begin %>
+      <% user = User.find(follow.followed_id) %>
+      <td><%= user.name %></td>
+      <td><%= link_to "Don't follow", follow_path(:id => follow.id, :redir_back => true), method: :delete %></td>
+      <% rescue ActiveRecord::RecordNotFound %>
+      <td>Fails for deleted user id: <%= follow.followed_id %></td>
+      <% end %>
+    </tr>
+  <% end %>
+</table>
+
+<br />
+
+<h2>Does not follow</h2>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% user_ids =[] %>
+<% User.find(:all).each {|u| user_ids << u.id} %>
+<% Follow.where(:follower_id => @user.id).each {|f| user_ids.delete f.followed_id} %>
+
+<% user_ids.each do |id| %>
+  <tr>
+    <% user = User.find(id) %>
+    <td><%= user.name %></td>
+    <td><%= link_to 'Follow', follows_path(:follow => {:follower_id => @user.id, :followed_id => user.id}, :redir_back => true), :method => :post %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<h2>Followed by</h2>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% Follow.where(:followed_id => @user.id).each do |follow| %>
+  <tr>
+    <% begin %>
+    <% user = User.find(follow.follower_id) %>
+    <td><%= user.name %></td>
+    <% rescue ActiveRecord::RecordNotFound %>
+    <td>Fails for deleted user id: <%= follow.follower_id %></td>
+    <% end %>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+</p>
+
+
+<%= link_to 'Edit', edit_user_path(@user) %> |
+<%= link_to 'Back', users_path %>
